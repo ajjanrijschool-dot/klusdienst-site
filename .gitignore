@@ -1,0 +1,26 @@
+# Wat NIET mee mag naar GitHub.
+#
+# Let op: een gratis GitHub Pages-site hoort bij een openbare repository.
+# Alles wat je uploadt kan iedereen lezen — ook je notities. Daarom staan
+# die hieronder.
+
+# Jouw eigen notities en werklijstjes
+LEESMIJ.md
+invullijst.md
+autoreactie-mail.md
+fotos-maken.md
+
+# Interne pagina en notitie, geen onderdeel van de site
+logo-keuze.html
+images/LEESMIJ.txt
+
+# De originele foto's uit je telefoon: groot, en niet nodig voor de site
+images/origineel/
+
+# Rommel van het systeem
+Thumbs.db
+desktop.ini
+.DS_Store
+node_modules/
+*.zip
+*.bak

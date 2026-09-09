@@ -1,0 +1,109 @@
+# =====================================================================
+# KLUS DIENST — serverinstellingen (Apache, zoals bij TransIP)
+#
+# Dit bestand hoort in dezelfde map als index.html. De naam begint met een
+# punt; in sommige bestandsbeheerders is hij daardoor verborgen — zet
+# "verborgen bestanden tonen" aan als je hem niet ziet.
+#
+# Draait je hosting op Nginx of zet je de site op Netlify, Vercel of
+# GitHub Pages? Dan doet dit bestand niets en kun je het laten staan.
+# =====================================================================
+
+# ---------- 1. Altijd via https en zonder www ----------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # http -> https
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # www.klusdienst.com -> klusdienst.com
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+  # /index.html -> / (één adres per pagina, dat leest Google prettiger)
+  RewriteCond %{THE_REQUEST} \s/index\.html[\s?] [NC]
+  RewriteRule ^index\.html$ / [L,R=301]
+</IfModule>
+
+# ---------- 2. Eigen foutpagina ----------
+ErrorDocument 404 /404.html
+
+# ---------- 3. Bestanden die niemand hoeft te zien ----------
+# De notities voor jezelf (.md) en de originele foto's horen niet op straat.
+# De schrijfwijze verschilt per Apache-versie. Beide staan hieronder, elk
+# achter een controle, zodat de server nooit op een onbekende regel stukloopt.
+<IfModule mod_authz_core.c>
+  <FilesMatch "\.(md|log|bak|old|zip)$">
+    Require all denied
+  </FilesMatch>
+  <Files ".htaccess">
+    Require all denied
+  </Files>
+</IfModule>
+<IfModule !mod_authz_core.c>
+  <FilesMatch "\.(md|log|bak|old|zip)$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+  <Files ".htaccess">
+    Order allow,deny
+    Deny from all
+  </Files>
+</IfModule>
+
+# Geen mappen laten doorbladeren.
+<IfModule mod_autoindex.c>
+  Options -Indexes
+</IfModule>
+
+# ---------- 4. Inpakken voor onderweg ----------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/xml image/svg+xml
+</IfModule>
+
+# ---------- 5. Hoe lang de browser dingen mag bewaren ----------
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # Foto's, iconen en lettertypen veranderen zelden: een jaar.
+  ExpiresByType image/jpeg              "access plus 1 year"
+  ExpiresByType image/png               "access plus 1 year"
+  ExpiresByType image/webp              "access plus 1 year"
+  ExpiresByType image/svg+xml           "access plus 1 year"
+  ExpiresByType image/x-icon            "access plus 1 year"
+  ExpiresByType font/woff2              "access plus 1 year"
+
+  # Opmaak en scripts: een week, zodat een wijziging vlot doorkomt.
+  ExpiresByType text/css                "access plus 1 week"
+  ExpiresByType application/javascript  "access plus 1 week"
+
+  # Teksten nooit lang bewaren, anders zie je je eigen wijziging niet.
+  ExpiresByType text/html               "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # De service worker moet altijd vers zijn, anders blijft een oude versie
+  # van de site in de browser hangen.
+  <Files "sw.js">
+    Header set Cache-Control "no-cache, max-age=0"
+  </Files>
+
+  # ---------- 6. Een paar veiligheidsregels ----------
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # Camera, microfoon en locatie heeft deze site niet nodig.
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+</IfModule>
+
+# ---------- 7. Juiste bestandssoorten ----------
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+  AddType image/svg+xml             .svg
+  AddType font/woff2                .woff2
+  AddDefaultCharset UTF-8
+</IfModule>

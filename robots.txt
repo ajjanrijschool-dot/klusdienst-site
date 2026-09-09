@@ -1,0 +1,12 @@
+# Klus Dienst — klusdienst.com
+# Zoekmachines mogen de hele site indexeren, behalve de werkbestanden.
+
+User-agent: *
+Allow: /
+
+# Interne pagina's en notities horen niet in Google.
+Disallow: /logo-keuze.html
+Disallow: /images/origineel/
+Disallow: /*.md$
+
+Sitemap: https://klusdienst.com/sitemap.xml

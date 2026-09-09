@@ -1,0 +1,33 @@
+{
+  "name": "Klus Dienst — klussen & verbouwingen",
+  "short_name": "Klus Dienst",
+  "description": "Klusbedrijf uit Leerdam. Van kleine klus tot complete verbouwing.",
+  "lang": "nl",
+  "dir": "ltr",
+  "start_url": "/?bron=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#15171C",
+  "theme_color": "#15171C",
+  "categories": ["business", "lifestyle"],
+  "icons": [
+    { "src": "icons/icoon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icoon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icoon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Offerte aanvragen",
+      "short_name": "Offerte",
+      "url": "/?bron=app#offerte",
+      "icons": [{ "src": "icons/icoon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Bekijk projecten",
+      "short_name": "Projecten",
+      "url": "/?bron=app#projecten",
+      "icons": [{ "src": "icons/icoon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

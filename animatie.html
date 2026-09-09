@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zo werken wij — animatie | Klus Dienst</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><rect width='48' height='48' rx='10' fill='%2315171C'/><rect x='7' y='20' width='34' height='9' rx='4.5' fill='%23FFC02E'/><circle cx='24' cy='24.5' r='2.7' fill='%2315171C'/></svg>">
+<style>
+  :root{
+    --ink:#15171C; --ink-2:#1E2128; --graphite:#3B404B; --mist:#767D8B;
+    --gips:#E9E7E1; --gips-2:#F3F1EC; --tape:#FFC02E; --tape-2:#E8A400;
+    --display:"Archivo",Arial,sans-serif;
+    --body:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{
+    margin:0;background:var(--gips-2);color:var(--ink);
+    font-family:var(--body);display:grid;place-items:center;min-height:100vh;
+    padding:28px 20px 60px;
+  }
+  .kop{width:min(100%,1100px);margin-bottom:18px}
+  .kop h1{
+    font-family:var(--display);font-weight:800;text-transform:uppercase;
+    font-variation-settings:"wdth" 110;letter-spacing:-.02em;
+    font-size:clamp(1.4rem,3vw,2.1rem);margin:0 0 6px;
+  }
+  .kop p{margin:0;color:var(--graphite);font-size:.95rem;max-width:70ch}
+
+  /* ---------- het speelvlak ---------- */
+  .film{
+    width:min(100%,1100px);aspect-ratio:16/9;position:relative;overflow:hidden;
+    background:var(--ink);border-radius:10px;
+    box-shadow:0 40px 80px -50px rgba(21,23,28,.9);
+  }
+  .film.pauze *{animation-play-state:paused!important}
+
+  .scene{position:absolute;inset:0;opacity:0;transition:opacity .5s ease}
+  .scene.is-active{opacity:1}
+  .scene svg{position:absolute;inset:0;width:100%;height:100%}
+
+  /* stapnummer en titel onderin */
+  .balk{
+    position:absolute;left:0;right:0;bottom:0;padding:0 4.2% 4%;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:20px;z-index:5;
+  }
+  .balk__tekst{display:flex;align-items:baseline;gap:14px}
+  .balk__nr{
+    font-family:var(--mono);font-size:clamp(10px,1.1vw,13px);letter-spacing:.2em;color:var(--tape);
+  }
+  .balk__titel{
+    font-family:var(--display);font-weight:800;text-transform:uppercase;
+    font-variation-settings:"wdth" 108;letter-spacing:-.02em;color:#fff;
+    font-size:clamp(1.1rem,2.6vw,2rem);line-height:1;
+  }
+  .balk__sub{
+    font-family:var(--body);font-size:clamp(11px,1.2vw,15px);color:rgba(255,255,255,.62);
+    max-width:34ch;text-align:right;
+  }
+  .balk__tekst,.balk__sub{opacity:0;transform:translateY(10px);transition:opacity .45s ease .15s,transform .45s ease .15s}
+  .scene.is-active .balk__tekst,.scene.is-active .balk__sub{opacity:1;transform:none}
+
+  /* voortgangsstreep */
+  .voortgang{position:absolute;left:0;right:0;top:0;height:4px;background:rgba(255,255,255,.12);z-index:6}
+  .voortgang span{display:block;height:100%;width:0;background:var(--tape)}
+
+  /* logo-watermerk rechtsboven */
+  .merk{position:absolute;top:3.4%;right:4.2%;width:clamp(74px,9vw,116px);z-index:6;opacity:.9}
+  .merk svg{width:100%;height:auto;display:block}
+
+  /* ---------- bediening ---------- */
+  .bediening{
+    width:min(100%,1100px);margin-top:16px;display:flex;flex-wrap:wrap;
+    align-items:center;gap:12px;
+  }
+  .knop{
+    font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+    padding:12px 20px;border-radius:4px;border:1px solid var(--ink);background:transparent;
+    color:var(--ink);cursor:pointer;transition:background .2s,color .2s;
+  }
+  .knop:hover{background:var(--ink);color:#fff}
+  .knop--vol{background:var(--tape);border-color:var(--tape)}
+  .knop--vol:hover{background:var(--ink);border-color:var(--ink)}
+  .klok{font-family:var(--mono);font-size:12px;color:var(--graphite);margin-left:auto}
+
+  .uitleg{
+    width:min(100%,1100px);margin-top:26px;background:#fff;border:1px solid #E2DFD8;
+    border-radius:8px;padding:22px 24px;
+  }
+  .uitleg h2{font-family:var(--display);font-size:1.05rem;margin:0 0 10px;text-transform:uppercase;letter-spacing:-.01em}
+  .uitleg ol{margin:0;padding-left:20px;color:var(--graphite);font-size:.93rem}
+  .uitleg li{margin-bottom:7px}
+  .uitleg code{font-family:var(--mono);font-size:.85em;background:var(--gips-2);padding:2px 6px;border-radius:3px}
+
+  /* ===================== animaties per scene ===================== */
+  @keyframes tekenLijn{to{stroke-dashoffset:0}}
+  @keyframes opkomen{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+  @keyframes zakken{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:none}}
+  @keyframes puls{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.35}}
+  @keyframes veegRechts{from{transform:translateX(-102%)}to{transform:translateX(0)}}
+  @keyframes schuifIn{from{transform:translateX(120%)}to{transform:translateX(0)}}
+  @keyframes gloei{from{opacity:0}to{opacity:1}}
+  @keyframes bel{0%{transform:translateX(-9px)}55%{transform:translateX(7px)}100%{transform:translateX(0)}}
+  @keyframes veegBezem{from{transform:translateX(-360px) rotate(-9deg)}to{transform:translateX(1400px) rotate(9deg)}}
+  @keyframes stofWeg{0%{opacity:.55}100%{opacity:0;transform:translate(40px,-16px) scale(1.4)}}
+  @keyframes tik{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+  .scene.is-active .lijn{stroke-dasharray:var(--len,600);stroke-dashoffset:var(--len,600);animation:tekenLijn 1.1s ease forwards}
+  .scene.is-active .op{opacity:0;animation:opkomen .7s ease forwards}
+  .scene.is-active .neer{opacity:0;animation:zakken .7s ease forwards}
+  .scene.is-active .glow{opacity:0;animation:gloei .8s ease forwards}
+  .d1{animation-delay:.25s!important}.d2{animation-delay:.7s!important}.d3{animation-delay:1.2s!important}
+  .d4{animation-delay:1.8s!important}.d5{animation-delay:2.4s!important}.d6{animation-delay:3s!important}
+  .d7{animation-delay:3.6s!important}.d8{animation-delay:4.4s!important}
+  .d9{animation-delay:5.2s!important}
+
+
+  /* Elementen met een eigen animatie in de tag: die overschrijft de animatie
+     uit de klasse hierboven, dus regelen we hun zichtbaarheid apart. */
+  /* Insluitmodus: alleen het beeld, voor het blokje op de startpagina.
+     Aanzetten met animatie.html?insluiten=1 */
+  body.insluiten{padding:0;background:transparent;min-height:0;display:block;overflow:hidden}
+  body.insluiten .kop,body.insluiten .bediening,body.insluiten .uitleg{display:none}
+  body.insluiten .film{
+    width:100%;height:100vh;max-width:none;aspect-ratio:auto;
+    border-radius:0;box-shadow:none;
+  }
+
+  .zelf{opacity:0}
+  .scene.is-active .zelf{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="kop">
+  <h1>Zo werken wij — 40 seconden</h1>
+  <p>Vijf stappen, van het eerste telefoontje tot de bezemschone oplevering. In de kleuren van de site, met het waterpas-logo. Speelt vanzelf en stopt op het slotbeeld met de QR-code.</p>
+</div>
+
+<div class="film" data-film>
+  <div class="voortgang"><span data-voortgang></span></div>
+
+  <div class="merk" aria-hidden="true">
+    <svg viewBox="0 0 48 48"><rect x="1" y="15" width="46" height="18" rx="4" fill="#FFC02E"/><rect x="14" y="19" width="20" height="10" rx="5" fill="#15171C"/><rect x="19.4" y="19" width="1.6" height="10" fill="#FFC02E"/><rect x="27" y="19" width="1.6" height="10" fill="#FFC02E"/><circle cx="24" cy="24" r="2.7" fill="#FFC02E"/></svg>
+  </div>
+
+  <!-- ============ 01 · CONTACT ============ -->
+  <section class="scene" data-scene="0">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="1600" height="900" fill="#15171C"/>
+      <circle class="glow d1" cx="560" cy="420" r="250" fill="#FFC02E" opacity=".07"/>
+      <!-- telefoon -->
+      <g class="op d1">
+        <rect x="440" y="230" width="240" height="400" rx="30" fill="#1E2128" stroke="#3B404B" stroke-width="3"/>
+        <rect x="462" y="262" width="196" height="326" rx="14" fill="#15171C"/>
+        <rect x="530" y="243" width="60" height="7" rx="3.5" fill="#3B404B"/>
+      </g>
+      <!-- gesprekbubbels -->
+      <g class="op d3">
+        <rect x="486" y="300" width="150" height="46" rx="14" fill="#3B404B"/>
+        <rect x="504" y="316" width="96" height="7" rx="3.5" fill="#767D8B"/>
+      </g>
+      <g class="op d4">
+        <rect x="512" y="364" width="124" height="46" rx="14" fill="#FFC02E"/>
+        <rect x="530" y="380" width="82" height="7" rx="3.5" fill="#15171C" opacity=".55"/>
+      </g>
+      <g class="op d5">
+        <rect x="486" y="428" width="168" height="46" rx="14" fill="#3B404B"/>
+        <rect x="504" y="444" width="118" height="7" rx="3.5" fill="#767D8B"/>
+      </g>
+      <!-- belsignaal -->
+      <circle class="zelf" cx="680" cy="250" r="16" fill="#FFC02E" style="animation:puls 1.6s ease-in-out .8s infinite"/>
+      <!-- tekst rechts -->
+      <g class="neer d4">
+        <text x="820" y="360" fill="#FFFFFF" font-family="Archivo,Arial" font-size="76" font-weight="800" letter-spacing="-2">06 18 50 48 28</text>
+        <text x="822" y="418" fill="#767D8B" font-family="IBM Plex Mono,monospace" font-size="26" letter-spacing="4">BELLEN OF APPEN — 24/7</text>
+      </g>
+      <rect class="op d6" x="820" y="470" width="360" height="4" fill="#FFC02E"/>
+    </svg>
+    <div class="balk">
+      <div class="balk__tekst"><span class="balk__nr">01</span><span class="balk__titel">Contact</span></div>
+      <p class="balk__sub">U belt of appt. We stellen een paar vragen en plannen een bezoek in.</p>
+    </div>
+  </section>
+
+  <!-- ============ 02 · OPNAME & OFFERTE ============ -->
+  <section class="scene" data-scene="1">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="1600" height="900" fill="#15171C"/>
+      <!-- ruimte in lijnen -->
+      <g fill="none" stroke="#3B404B" stroke-width="4">
+        <path class="lijn d1" style="--len:1400" d="M300 620 V240 H1140 V620"/>
+        <path class="lijn d2" style="--len:900" d="M300 620 H1140"/>
+      </g>
+      <!-- deuropening -->
+      <path class="lijn d3" style="--len:420" d="M980 620 V400 H1140" fill="none" stroke="#3B404B" stroke-width="4"/>
+      <!-- maatlijn -->
+      <g class="op d4">
+        <line x1="300" y1="690" x2="1140" y2="690" stroke="#FFC02E" stroke-width="3"/>
+        <line x1="300" y1="668" x2="300" y2="712" stroke="#FFC02E" stroke-width="3"/>
+        <line x1="1140" y1="668" x2="1140" y2="712" stroke="#FFC02E" stroke-width="3"/>
+        <rect x="640" y="668" width="164" height="44" rx="6" fill="#15171C"/>
+        <text x="722" y="700" fill="#FFC02E" font-family="IBM Plex Mono,monospace" font-size="26" text-anchor="middle">4.200 mm</text>
+      </g>
+      <!-- waterpas met bel -->
+      <g class="op d5">
+        <rect x="520" y="330" width="400" height="66" rx="14" fill="#FFC02E"/>
+        <rect x="660" y="346" width="120" height="34" rx="17" fill="#15171C"/>
+        <circle cx="720" cy="363" r="11" fill="#FFC02E" style="animation:bel 1.5s ease-in-out 2.9s both"/>
+      </g>
+      <!-- offerte -->
+      <g class="op d7">
+        <rect x="1230" y="300" width="230" height="300" rx="10" fill="#F3F1EC"/>
+        <rect x="1262" y="340" width="140" height="12" rx="6" fill="#15171C"/>
+        <rect x="1262" y="376" width="166" height="8" rx="4" fill="#767D8B"/>
+        <rect x="1262" y="400" width="166" height="8" rx="4" fill="#767D8B"/>
+        <rect x="1262" y="424" width="120" height="8" rx="4" fill="#767D8B"/>
+        <rect x="1262" y="500" width="166" height="34" rx="6" fill="#FFC02E"/>
+      </g>
+    </svg>
+    <div class="balk">
+      <div class="balk__tekst"><span class="balk__nr">02</span><span class="balk__titel">Opname &amp; offerte</span></div>
+      <p class="balk__sub">We meten op, denken mee over materiaal en sturen een offerte zonder kleine lettertjes.</p>
+    </div>
+  </section>
+
+  <!-- ============ 03 · PLANNING ============ -->
+  <section class="scene" data-scene="2">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="1600" height="900" fill="#15171C"/>
+      <g class="op d1">
+        <rect x="420" y="210" width="760" height="480" rx="16" fill="#1E2128" stroke="#3B404B" stroke-width="3"/>
+        <rect x="420" y="210" width="760" height="76" rx="16" fill="#3B404B"/>
+        <rect x="420" y="270" width="760" height="16" fill="#3B404B"/>
+        <circle cx="500" cy="248" r="10" fill="#FFC02E"/>
+        <circle cx="540" cy="248" r="10" fill="#767D8B"/>
+      </g>
+      <g fill="#3B404B">
+        <rect class="op d2" x="470" y="330" width="120" height="76" rx="8"/>
+        <rect class="op d2" x="610" y="330" width="120" height="76" rx="8"/>
+        <rect class="op d3" x="750" y="330" width="120" height="76" rx="8"/>
+        <rect class="op d3" x="890" y="330" width="120" height="76" rx="8"/>
+        <rect class="op d4" x="1030" y="330" width="120" height="76" rx="8"/>
+        <rect class="op d4" x="470" y="430" width="120" height="76" rx="8"/>
+        <rect class="op d5" x="610" y="430" width="120" height="76" rx="8"/>
+      </g>
+      <!-- ingeplande dagen kleuren geel -->
+      <g fill="#FFC02E">
+        <rect class="glow d5" x="750" y="430" width="120" height="76" rx="8"/>
+        <rect class="glow d6" x="890" y="430" width="120" height="76" rx="8"/>
+        <rect class="glow d7" x="1030" y="430" width="120" height="76" rx="8"/>
+        <rect class="glow d8" x="470" y="530" width="120" height="76" rx="8"/>
+      </g>
+      <g class="op d8">
+        <text x="800" y="640" fill="#FFFFFF" font-family="IBM Plex Mono,monospace" font-size="27" text-anchor="middle" letter-spacing="3">START MAANDAG — 4 WERKDAGEN</text>
+      </g>
+    </svg>
+    <div class="balk">
+      <div class="balk__tekst"><span class="balk__nr">03</span><span class="balk__titel">Planning</span></div>
+      <p class="balk__sub">Startdatum vast, aantal dagen bekend. U weet wanneer we komen.</p>
+    </div>
+  </section>
+
+  <!-- ============ 04 · UITVOERING ============ -->
+  <section class="scene" data-scene="3">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <clipPath id="wandKnip"><rect x="360" y="150" width="880" height="520" rx="8"/></clipPath>
+        <clipPath id="vloerKnip"><rect x="200" y="670" width="1200" height="150"/></clipPath>
+      </defs>
+      <rect width="1600" height="900" fill="#15171C"/>
+
+      <!-- regelwerk -->
+      <g class="op d1" stroke="#3B404B" stroke-width="10">
+        <line x1="420" y1="150" x2="420" y2="670"/><line x1="620" y1="150" x2="620" y2="670"/>
+        <line x1="820" y1="150" x2="820" y2="670"/><line x1="1020" y1="150" x2="1020" y2="670"/>
+        <line x1="1200" y1="150" x2="1200" y2="670"/>
+      </g>
+
+      <!-- gipsplaat schuift erin -->
+      <g clip-path="url(#wandKnip)">
+        <rect class="zelf" x="360" y="150" width="440" height="520" fill="#E9E7E1" style="animation:schuifIn .9s cubic-bezier(.22,.61,.36,1) 1.1s both"/>
+        <rect class="zelf" x="800" y="150" width="440" height="520" fill="#E9E7E1" style="animation:schuifIn .9s cubic-bezier(.22,.61,.36,1) 1.7s both"/>
+        <!-- stucwerk veegt eroverheen -->
+        <rect class="zelf" x="360" y="150" width="880" height="520" fill="#F3F1EC" style="animation:veegRechts 1.4s cubic-bezier(.22,.61,.36,1) 2.6s both"/>
+      </g>
+
+      <!-- nis met tv en ledgloed -->
+      <g class="glow d7">
+        <rect x="520" y="250" width="560" height="300" rx="6" fill="#FFC02E" opacity=".28"/>
+        <rect x="546" y="272" width="508" height="256" rx="4" fill="#15171C"/>
+      </g>
+
+      <!-- vloerdelen schuiven in -->
+      <g clip-path="url(#vloerKnip)">
+        <rect class="zelf" x="200" y="670" width="1200" height="46" fill="#A9713F" style="animation:schuifIn .8s ease 3.2s both"/>
+        <rect class="zelf" x="200" y="722" width="1200" height="46" fill="#B87E48" style="animation:schuifIn .8s ease 3.7s both"/>
+        <rect class="zelf" x="200" y="774" width="1200" height="46" fill="#A9713F" style="animation:schuifIn .8s ease 4.2s both"/>
+      </g>
+    </svg>
+    <div class="balk">
+      <div class="balk__tekst"><span class="balk__nr">04</span><span class="balk__titel">Uitvoering</span></div>
+      <p class="balk__sub">Gipswerk, stucwerk, verlichting en vloer. Wij werken door tot het af is.</p>
+    </div>
+  </section>
+
+  <!-- ============ 05 · OPLEVERING ============ -->
+  <section class="scene" data-scene="4">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="1600" height="900" fill="#15171C"/>
+      <!-- afgewerkte wand -->
+      <rect class="op d1" x="360" y="150" width="880" height="520" rx="8" fill="#F3F1EC"/>
+      <rect class="glow d2" x="520" y="250" width="560" height="300" rx="6" fill="#FFC02E" opacity=".3"/>
+      <rect class="op d2" x="546" y="272" width="508" height="256" rx="4" fill="#15171C"/>
+      <rect class="op d1" x="200" y="670" width="1200" height="150" fill="#A9713F"/>
+
+      <!-- bezem veegt door -->
+      <g class="zelf" style="animation:veegBezem 1.7s ease-in-out .8s both;transform-origin:center">
+        <rect x="240" y="560" width="14" height="200" rx="7" fill="#767D8B"/>
+        <rect x="196" y="748" width="102" height="34" rx="8" fill="#FFC02E"/>
+      </g>
+      <circle class="zelf" cx="520" cy="740" r="26" fill="#767D8B" style="animation:stofWeg 1.6s ease 2.2s both"/>
+      <circle class="zelf" cx="600" cy="726" r="16" fill="#767D8B" style="animation:stofWeg 1.6s ease 2.5s both"/>
+
+      <!-- logo en gegevens -->
+      <!-- eindkaart: donkere laag over het beeld, daarop de gegevens -->
+      <rect class="glow d5" width="1600" height="900" fill="#15171C"/>
+
+      <g class="op d6">
+        <g transform="translate(196,284) scale(2.1)">
+          <rect x="1" y="15" width="46" height="18" rx="4" fill="#FFC02E"/>
+          <rect x="14" y="19" width="20" height="10" rx="5" fill="#15171C"/>
+          <rect x="19.4" y="19" width="1.6" height="10" fill="#FFC02E"/>
+          <rect x="27" y="19" width="1.6" height="10" fill="#FFC02E"/>
+          <circle cx="24" cy="24" r="2.7" fill="#FFC02E"/>
+        </g>
+        <text x="200" y="468" fill="#FFFFFF" font-family="Archivo,Arial" font-size="74" font-weight="800" letter-spacing="-2">KLUS DIENST</text>
+        <text x="204" y="510" fill="#767D8B" font-family="IBM Plex Mono,monospace" font-size="21" letter-spacing="4">KLUSSEN &amp; VERBOUWINGEN</text>
+      </g>
+
+      <g class="op d7">
+        <rect x="200" y="556" width="300" height="4" fill="#FFC02E"/>
+        <text x="200" y="642" fill="#FFC02E" font-family="Archivo,Arial" font-size="56" font-weight="800" letter-spacing="-1">klusdienst.com</text>
+        <text x="202" y="696" fill="#FFFFFF" font-family="IBM Plex Mono,monospace" font-size="28" letter-spacing="4">06 18 50 48 28</text>
+      </g>
+
+      <!-- QR-code naar klusdienst.com. Het pad is met lijnen getekend,
+           dus stroke en niet fill. -->
+      <g class="op d8">
+        <rect x="1100" y="284" width="300" height="300" rx="16" fill="#F3F1EC"/>
+        <g transform="translate(1128,312) scale(8.41379)">
+          <path d="M0 0.5h7m1 0h2m1 0h4m3 0h1m3 0h7M0 1.5h1m5 0h1m1 0h3m1 0h4m4 0h1m1 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h4m3 0h2m1 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m2 0h3m2 0h2m1 0h1m1 0h2m1 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m2 0h3m2 0h4m1 0h2m1 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m1 0h2m4 0h1m1 0h2m4 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M8 7.5h1m1 0h1m5 0h3m1 0h1M2 8.5h3m1 0h1m1 0h2m1 0h2m2 0h2m2 0h1m1 0h3m2 0h3M1 9.5h2m1 0h2m1 0h1m2 0h1m5 0h4m1 0h2m1 0h1m1 0h1m1 0h1M0 10.5h2m1 0h8m2 0h3m2 0h1m1 0h3m1 0h2M0 11.5h2m2 0h1m2 0h1m2 0h4m3 0h1m2 0h6m1 0h1M0 12.5h3m1 0h1m1 0h1m1 0h1m2 0h3m4 0h2m1 0h1m1 0h1m2 0h3M0 13.5h1m1 0h1m1 0h1m2 0h4m1 0h1m1 0h1m1 0h1m2 0h4m1 0h2m1 0h2M1 14.5h2m3 0h1m2 0h2m3 0h3m3 0h1m1 0h2M0 15.5h1m2 0h1m1 0h1m2 0h1m2 0h1m1 0h1m1 0h1m3 0h1m1 0h2m1 0h2m1 0h1M2 16.5h2m1 0h3m1 0h5m1 0h1m1 0h3m3 0h1m1 0h2M0 17.5h1m3 0h2m1 0h3m4 0h2m2 0h8m1 0h2M0 18.5h1m1 0h2m1 0h2m1 0h4m2 0h2m2 0h1m1 0h1m1 0h2m1 0h1M0 19.5h1m2 0h3m1 0h5m1 0h1m1 0h2m2 0h2m1 0h1m1 0h2m2 0h1M0 20.5h1m2 0h2m1 0h2m1 0h2m3 0h1m1 0h2m1 0h6m1 0h1M8 21.5h3m3 0h1m3 0h1m1 0h1m3 0h2m1 0h2M0 22.5h7m3 0h2m3 0h2m2 0h2m1 0h1m1 0h1M0 23.5h1m5 0h1m2 0h1m1 0h2m1 0h2m3 0h2m3 0h2m2 0h1M0 24.5h1m1 0h3m1 0h1m1 0h1m3 0h2m1 0h4m1 0h8M0 25.5h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h2m1 0h1m1 0h3m1 0h1m1 0h2M0 26.5h1m1 0h3m1 0h1m1 0h1m1 0h4m1 0h2m1 0h7m1 0h2M0 27.5h1m5 0h1m2 0h2m2 0h2m1 0h1m3 0h2m2 0h2m1 0h1M0 28.5h7m2 0h1m1 0h1m1 0h1m2 0h2m1 0h1m2 0h1m1 0h3" fill="none" stroke="#15171C" stroke-width="1" shape-rendering="crispEdges"/>
+        </g>
+        <text x="1250" y="646" fill="#FFC02E" font-family="IBM Plex Mono,monospace" font-size="22" text-anchor="middle" letter-spacing="3">SCAN VOOR DE SITE</text>
+      </g>
+    </svg>
+    <div class="balk">
+      <div class="balk__tekst"><span class="balk__nr">05</span><span class="balk__titel">Oplevering</span></div>
+      <p class="balk__sub">Samen langs het werk, afval mee, ruimte schoon achtergelaten.</p>
+    </div>
+  </section>
+</div>
+
+<div class="bediening">
+  <button class="knop knop--vol" type="button" data-speel>Pauzeren</button>
+  <button class="knop" type="button" data-opnieuw>Opnieuw</button>
+  <button class="knop" type="button" data-schoon>Verberg bediening</button>
+  <span class="klok" data-klok>00 / 40 sec</span>
+</div>
+
+<div class="uitleg">
+  <h2>Er een filmpje van maken</h2>
+  <ol>
+    <li>Klik op <b>Verberg bediening</b> — dan blijft alleen het beeld over.</li>
+    <li>Druk op <code>Windows-toets + G</code>, dat opent de Xbox Game Bar. Klik op de opnameknop (of <code>Windows + Alt + R</code>).</li>
+    <li>Klik op <b>Opnieuw</b> en laat de veertig seconden lopen. Stop daarna de opname.</li>
+    <li>Je opname staat in <code>Video's\Captures</code> als MP4. Die kun je zo op Instagram, Facebook of WhatsApp zetten.</li>
+  </ol>
+  <p style="margin:12px 0 0;color:#3B404B;font-size:.9rem">
+    Voor Instagram of TikTok is staand beeld (9:16) beter dan dit liggende formaat. Zeg het als je
+    daar een versie van wilt, dan maak ik die erbij.
+  </p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var TOTAAL = 40000;
+  var scenes = [
+    { start: 0,     duur: 7000  },  /* contact */
+    { start: 7000,  duur: 8000  },  /* opname en offerte */
+    { start: 15000, duur: 7000  },  /* planning */
+    { start: 22000, duur: 10000 },  /* uitvoering */
+    { start: 32000, duur: 8000  }   /* oplevering */
+  ];
+
+  var film = document.querySelector('[data-film]');
+  var vlakken = Array.prototype.slice.call(document.querySelectorAll('.scene'));
+  var balk = document.querySelector('[data-voortgang]');
+  var klok = document.querySelector('[data-klok]');
+  var speelKnop = document.querySelector('[data-speel]');
+
+  var begin = performance.now();
+  var pauzeVanaf = 0;
+  var loopt = true;
+  var huidig = -1;
+  var aanHetEind = false;
+  var insluiten = new URLSearchParams(location.search).has('insluiten');
+  if (insluiten) document.body.classList.add('insluiten');
+  var lus = null;
+
+  function toonScene(i) {
+    if (i === huidig) return;
+    huidig = i;
+    vlakken.forEach(function (v, n) { v.classList.toggle('is-active', n === i); });
+  }
+
+  function tik(nu) {
+    var verstreken = nu - begin;
+    if (verstreken >= TOTAAL && insluiten) {
+      /* op de website blijft hij rondlopen */
+      begin = nu;
+      verstreken = 0;
+      vlakken.forEach(function (v) { v.classList.remove('is-active'); });
+      huidig = -1;
+    }
+    if (verstreken >= TOTAAL) {
+      /* einde: laatste beeld vasthouden, niet terugspringen */
+      toonScene(scenes.length - 1);
+      balk.style.width = '100%';
+      klok.textContent = '40 / 40 sec';
+      speelKnop.textContent = 'Opnieuw afspelen';
+      loopt = false;
+      aanHetEind = true;
+      cancelAnimationFrame(lus);
+      return;
+    }
+    var actief = 0;
+    for (var i = 0; i < scenes.length; i++) {
+      if (verstreken >= scenes[i].start) actief = i;
+    }
+    toonScene(actief);
+    balk.style.width = (verstreken / TOTAAL * 100).toFixed(2) + '%';
+    var sec = Math.floor(verstreken / 1000);
+    klok.textContent = (sec < 10 ? '0' : '') + sec + ' / 40 sec';
+    lus = requestAnimationFrame(tik);
+  }
+
+  function start() {
+    loopt = true;
+    film.classList.remove('pauze');
+    speelKnop.textContent = 'Pauzeren';
+    aanHetEind = false;
+    begin = performance.now() - pauzeVanaf;
+    cancelAnimationFrame(lus);
+    /* meteen het juiste beeld zetten en daarna pas de lus laten lopen,
+       anders blijft het scherm zwart tot het eerste tekenframe komt */
+    tik(performance.now());
+  }
+  function pauzeer() {
+    loopt = false;
+    film.classList.add('pauze');
+    speelKnop.textContent = 'Afspelen';
+    pauzeVanaf = (performance.now() - begin) % TOTAAL;
+    cancelAnimationFrame(lus);
+  }
+
+  speelKnop.addEventListener('click', function () {
+    if (aanHetEind) { opnieuw(); return; }
+    loopt ? pauzeer() : start();
+  });
+
+  function opnieuw() {
+    cancelAnimationFrame(lus);
+    vlakken.forEach(function (v) { v.classList.remove('is-active'); });
+    huidig = -1;
+    pauzeVanaf = 0;
+    aanHetEind = false;
+    /* even wachten zodat de css-animaties opnieuw beginnen */
+    setTimeout(start, 60);
+  }
+  document.querySelector('[data-opnieuw]').addEventListener('click', opnieuw);
+
+  document.querySelector('[data-schoon]').addEventListener('click', function () {
+    var weg = document.querySelector('.kop').style.display !== 'none';
+    document.querySelector('.kop').style.display = weg ? 'none' : '';
+    document.querySelector('.uitleg').style.display = weg ? 'none' : '';
+    this.textContent = weg ? 'Toon bediening' : 'Verberg bediening';
+  });
+
+  /* Deze pagina bestaat om de animatie te tonen, dus hij speelt altijd —
+     ook als bewegende beelden in Windows uitstaan. Pauzeren kan met de knop. */
+  start();
+})();
+</script>
+</body>
+</html>
