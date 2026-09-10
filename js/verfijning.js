@@ -254,7 +254,7 @@
       knop.disabled = true;
       briefjeTonen('Uw aanvraag is verstuurd. Om dubbele aanvragen te voorkomen kunt u over ' +
         '<b>' + klok(over) + '</b> nog een aanvraag doen.<br>' +
-        'Is het dringend? Bel <a href="tel:+31618504828">06 18 50 48 28</a> — we zijn dag en nacht bereikbaar.');
+        'Is het dringend? Bel <a href="tel:+31618504828">06 18 50 48 28</a> — ma t/m za, 9.00–18.00 uur.');
       if (!tikker) tikker = setInterval(bijwerken, 1000);
     }
 
